@@ -1,0 +1,6 @@
+Keras
+opencv-python
+keras_vggface
+scipy
+numpy
+
