@@ -3,15 +3,34 @@ import numpy as np
 import scipy as sp
 import cv2
 import pickle
+import smtplib
+import tkinter as tk
+from PIL import ImageTk, Image
+
 
 #This program performs the actual facial recognition
-
 
 def load_stuff(filename):
     saved_stuff = open(filename, "rb")
     stuff = pickle.load(saved_stuff)
     saved_stuff.close()
     return stuff
+
+def send_email(subject, msg):
+        try:
+            server = smtplib.SMTP('smtp.gmail.com:587')
+            server.ehlo()
+            server.starttls()
+            server.login("edpNM06@gmail.com", "OMPRules7")
+            message = 'Subject: {}\n\n {}'.format(subject, msg)
+            server.sendmail("edpNM06@gmail.com", "edpNM06@gmail.com", message)
+            server.quit()
+            print("Success: Email sent!")
+        except:
+            print("Email failed to send.")
+
+subject = "Safe Home"
+msg = "Hello there, There maybe a possible new guest at your home."
 
 
 class FaceIdentify(object):
@@ -77,6 +96,8 @@ class FaceIdentify(object):
         resized_img = np.array(resized_img)
         return resized_img, (x_a, y_a, x_b - x_a, y_b - y_a)
 
+
+
     def identify_face(self, features, threshold=100):
         distances = []
         for person in self.precompute_features_map:
@@ -88,13 +109,18 @@ class FaceIdentify(object):
         if min_distance_value < threshold:
             return self.precompute_features_map[min_distance_index].get("name")
         else:
+           #uncomment the following line for full functionality. However this will slow down the video application.
+           # send_email(subject, msg)
             return "?"
+
+            # add email here or a call to the email here
 
     def detect_face(self):
         face_cascade = cv2.CascadeClassifier(self.CASE_PATH)
 
         # 0 means the default video capture device in OS
         video_capture = cv2.VideoCapture(0)
+
         # infinite loop, break by key ESC
         while True:
             if not video_capture.isOpened():
@@ -124,7 +150,7 @@ class FaceIdentify(object):
                 label = "{}".format(predicted_names[i])
                 self.draw_label(frame, (face[0], face[1]), label)
 
-            cv2.imshow('Keras Faces', frame)
+            cv2.imshow('Safe Home Camera', frame)  # shows the frame
             if cv2.waitKey(5) == 27:  # ESC key press
                 break
         # When everything is done, release the capture
@@ -133,9 +159,35 @@ class FaceIdentify(object):
 
 
 
-def main():
+def qf():
     face = FaceIdentify(precompute_features_file="./data/precompute_features.pickle")
     face.detect_face()
 
+
+def main():
+    window = tk.Tk()
+    #window.title("Join")
+    window.geometry("882x630")
+    window.configure(background='grey')
+    window.iconbitmap(default="SafeHomeIcon.ico")
+    window.wm_title("Safe Home")
+
+    path = "background3.jpg"
+
+    #Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
+    img = ImageTk.PhotoImage(Image.open(path))
+
+    #The Label widget is a standard Tkinter widget used to display a text or image on the screen.
+    panel = tk.Label(window, image = img)
+
+    #The Pack geometry manager packs widgets in rows or columns.
+    panel.pack(side = "top", fill = "both", expand = "yes")
+
+    button1 = tk.Button(window,text="next",command= qf)
+    button1.pack()
+
+    #Start the GUI
+    window.mainloop()
+
 if __name__ == "__main__":
-    main()
+     main()
