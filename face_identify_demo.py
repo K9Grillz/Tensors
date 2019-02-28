@@ -5,6 +5,7 @@ import cv2
 import pickle
 import smtplib
 import tkinter as tk
+from tkinter import ttk
 from PIL import ImageTk, Image
 
 
@@ -167,12 +168,12 @@ def qf():
 def main():
     window = tk.Tk()
     #window.title("Join")
-    window.geometry("882x630")
-    window.configure(background='grey')
+    window.geometry("800x630")
+    window.configure(background='white')
     window.iconbitmap(default="SafeHomeIcon.ico")
     window.wm_title("Safe Home")
 
-    path = "background3.jpg"
+    path = "background5.jpg"
 
     #Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
     img = ImageTk.PhotoImage(Image.open(path))
@@ -183,7 +184,7 @@ def main():
     #The Pack geometry manager packs widgets in rows or columns.
     panel.pack(side = "top", fill = "both", expand = "yes")
 
-    button1 = tk.Button(window,text="next",command= qf)
+    button1 = ttk.Button(window,text="Start Monitoring Now",command= qf)
     button1.pack()
 
     #Start the GUI
