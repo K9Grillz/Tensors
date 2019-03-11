@@ -7,14 +7,6 @@ from keras.preprocessing import image
 from keras_vggface import utils
 from keras_vggface.vggface import VGGFace
 
-#This will give an error the first time it is run
-#follow the source of the error. It will lead to
-#keras.application.vggface .....
-#Change this to
-#keras_application.vggface ...
-
-#Also for it to detect your face add your own videos to the folder
-#This program extracts the images from video
 
 def pickle_stuff(filename, stuff):
     save_stuff = open(filename, "wb")

@@ -1,12 +1,13 @@
 from keras_vggface.vggface import VGGFace
+from PIL import ImageTk, Image
+from tkinter import ttk
+import tkinter as tk
 import numpy as np
 import scipy as sp
 import cv2
+import pymp
 import pickle
 import smtplib
-import tkinter as tk
-from tkinter import ttk
-from PIL import ImageTk, Image
 
 
 #This program performs the actual facial recognition
@@ -16,6 +17,10 @@ def load_stuff(filename):
     stuff = pickle.load(saved_stuff)
     saved_stuff.close()
     return stuff
+
+
+subject = "Safe Home"
+msg = "Hello there, There maybe a possible new guest at your home."
 
 def send_email(subject, msg):
         try:
@@ -30,14 +35,12 @@ def send_email(subject, msg):
         except:
             print("Email failed to send.")
 
-subject = "Safe Home"
-msg = "Hello there, There maybe a possible new guest at your home."
-
 
 class FaceIdentify(object):
     """
     Singleton class for real time face identification
     """
+
     CASE_PATH = ".\\pretrained_models\\haarcascade_frontalface_alt.xml"
 
     def __new__(cls, precompute_features_file=None):
@@ -114,8 +117,6 @@ class FaceIdentify(object):
            # send_email(subject, msg)
             return "?"
 
-            # add email here or a call to the email here
-
     def detect_face(self):
         face_cascade = cv2.CascadeClassifier(self.CASE_PATH)
 
@@ -137,16 +138,24 @@ class FaceIdentify(object):
             )
             # placeholder for cropped faces
             face_imgs = np.empty((len(faces), self.face_size, self.face_size, 3))
+
+            #This can be made parallel. A thread for each face crop
             for i, face in enumerate(faces):
                 face_img, cropped = self.crop_face(frame, face, margin=10, size=self.face_size)
                 (x, y, w, h) = cropped
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 200, 0), 2)
                 face_imgs[i, :, :, :] = face_img
+                #This is where we would combine everything
+
+            #It is possible to make this parallel but given how intense neural nets are,
+            #probably not worth it
             if len(face_imgs) > 0:
                 # generate features for each face
                 features_faces = self.model.predict(face_imgs)
+                #This part however, is perfect candidate for parallel
                 predicted_names = [self.identify_face(features_face) for features_face in features_faces]
             # draw results
+            #Again, another parallel option
             for i, face in enumerate(faces):
                 label = "{}".format(predicted_names[i])
                 self.draw_label(frame, (face[0], face[1]), label)
@@ -160,7 +169,7 @@ class FaceIdentify(object):
 
 
 
-def qf():
+def start():
     face = FaceIdentify(precompute_features_file="./data/precompute_features.pickle")
     face.detect_face()
 
@@ -184,7 +193,7 @@ def main():
     #The Pack geometry manager packs widgets in rows or columns.
     panel.pack(side = "top", fill = "both", expand = "yes")
 
-    button1 = ttk.Button(window,text="Start Monitoring Now",command= qf)
+    button1 = ttk.Button(window,text="Start Monitoring Now",command= start)
     button1.pack()
 
     #Start the GUI
@@ -192,3 +201,13 @@ def main():
 
 if __name__ == "__main__":
      main()
+
+
+######
+# Performance Analysis
+# The 'init' is actually very light on system
+# Capture frames takes up about 25% utilization on each core
+# Actually identifying the frame uses 100% on all cores
+
+# Even with just serial, it feels like the system is already maxed out, the gains
+# to be had from making it parallel feel small.
