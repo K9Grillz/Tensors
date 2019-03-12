@@ -1,14 +1,13 @@
 from keras_vggface.vggface import VGGFace
+from multiprocessing import Pool
 from PIL import ImageTk, Image
 from tkinter import ttk
 import tkinter as tk
 import numpy as np
 import scipy as sp
 import cv2
-import pymp
 import pickle
 import smtplib
-
 
 #This program performs the actual facial recognition
 
@@ -111,7 +110,7 @@ class FaceIdentify(object):
         min_distance_value = min(distances)
         min_distance_index = distances.index(min_distance_value)
         if min_distance_value < threshold:
-            return self.precompute_features_map[min_distance_index].get("name")
+            return self.precompute_features_map[min_distance_index].get("name") + ' ' + str(min_distance_value)
         else:
            #uncomment the following line for full functionality. However this will slow down the video application.
            # send_email(subject, msg)
@@ -139,7 +138,7 @@ class FaceIdentify(object):
             # placeholder for cropped faces
             face_imgs = np.empty((len(faces), self.face_size, self.face_size, 3))
 
-            #This can be made parallel. A thread for each face crop
+            # This can be made parallel. A thread for each face crop
             for i, face in enumerate(faces):
                 face_img, cropped = self.crop_face(frame, face, margin=10, size=self.face_size)
                 (x, y, w, h) = cropped
@@ -200,7 +199,7 @@ def main():
     window.mainloop()
 
 if __name__ == "__main__":
-     main()
+    main()
 
 
 ######
