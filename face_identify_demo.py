@@ -110,7 +110,8 @@ class FaceIdentify(object):
         min_distance_value = min(distances)
         min_distance_index = distances.index(min_distance_value)
         if min_distance_value < threshold:
-            return self.precompute_features_map[min_distance_index].get("name") + ' ' + str(min_distance_value)
+            return self.precompute_features_map[min_distance_index].get("name") +\
+                ' ' + str(round(min_distance_value,1)) + '%'
         else:
            #uncomment the following line for full functionality. However this will slow down the video application.
            # send_email(subject, msg)
